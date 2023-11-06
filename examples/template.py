@@ -2,12 +2,11 @@ def xmaslight():
     #NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
     
     # Here are the libraries I am currently using:
-    import time
-    import board
-    import neopixel
+    # import board
+    # import neopixel
+    from simulator import neopixel, board
     import re
-    import math
-    
+
     # You are welcome to add any of these:
     # import random
     # import numpy
@@ -20,7 +19,7 @@ def xmaslight():
     
     # IMPORT THE COORDINATES (please don't break this bit)
     
-    coordfilename = "Python/coords.txt"
+    coordfilename = "../coords.txt"
 	
     fin = open(coordfilename,'r')
     coords_raw = fin.readlines()

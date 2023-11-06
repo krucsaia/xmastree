@@ -1,13 +1,14 @@
 # Here are the libraries I am currently using:
+import math
+# You are welcome to add any of these:
+import random
+import re
 import time
 
 import board
 import neopixel
-import re
-import math
+import simulator
 
-# You are welcome to add any of these:
-import random
 # import numpy
 # import scipy
 # import sys
@@ -22,6 +23,7 @@ MATWZ = 60
 # Change that value to change colour brightness.
 # May need to tweak the palette if changing that value
 maxBrightness = 255
+
 
 class boundingBox():
     def __init__(self):
@@ -74,7 +76,7 @@ class matrix():
         self._wY = ly
         self._wZ = lz
 
-    def get(self,x, y, z):
+    def get(self, x, y, z):
         return self._list[x * self._strideX + y * self._strideY + z * self._strideZ]
 
     def set(self, x, y, z, val):
@@ -89,6 +91,7 @@ class matrix():
         localY = int(localY * (self._wY - 1))
         localZ = int(localZ * (self._wZ - 1))
         return self.get(localX, localY, localZ)
+
 
 def xmaslight():
     # This is the code from my 
@@ -120,6 +123,7 @@ def xmaslight():
     PIXEL_COUNT = len(coords)  # this should be 500
 
     pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    simulator.set_pixel_locations(coords)
 
     # YOU CAN EDIT FROM HERE DOWN
 
@@ -128,8 +132,8 @@ def xmaslight():
 
     # Transition points
     palBST = 70
-    palB2R = 86 # Black to Red
-    palR2Y = 99 # Red to Yellow
+    palB2R = 86  # Black to Red
+    palR2Y = 99  # Red to Yellow
 
     # Black only
     for i in range(0, palBST):
@@ -172,15 +176,15 @@ def xmaslight():
         oldMat.copy(workMat)
 
         # Update the matrix
-        for x in range(1, MATWX-1):
-            for y in range(1, MATWY-1):
+        for x in range(1, MATWX - 1):
+            for y in range(1, MATWY - 1):
                 for z in range(2, MATWZ):
-                    v = oldMat.get(x, y, z-2)
-                    v = v + oldMat.get(x-1, y, z-1)
-                    v = v + oldMat.get(x, y-1, z - 1)
+                    v = oldMat.get(x, y, z - 2)
+                    v = v + oldMat.get(x - 1, y, z - 1)
+                    v = v + oldMat.get(x, y - 1, z - 1)
                     v = v + oldMat.get(x, y, z - 1)
-                    v = v + oldMat.get(x, y+1, z - 1)
-                    v = v + oldMat.get(x+1, y, z - 1)
+                    v = v + oldMat.get(x, y + 1, z - 1)
+                    v = v + oldMat.get(x + 1, y, z - 1)
                     v = max(min(int(v / 6), 255), 0)
 
                     workMat.set(x, y, z, v)

@@ -4,9 +4,9 @@ def xmaslight():
     # NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
 
     # Here are the libraries I am currently using:
-    import time
-    import board
-    import neopixel
+    # import board
+    # import neopixel
+    from simulator import neopixel, board
     import re
     import math
 
@@ -22,7 +22,7 @@ def xmaslight():
 
     # IMPORT THE COORDINATES (please don't break this bit)
 
-    coordfilename = "Python/coords.txt"
+    coordfilename = "../coords.txt"
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()
@@ -41,6 +41,7 @@ def xmaslight():
     PIXEL_COUNT = len(coords)  # this should be 500
 
     pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    pixels.set_pixel_locations(coords)
 
     # YOU CAN EDIT FROM HERE DOWN
 
@@ -68,26 +69,26 @@ def xmaslight():
 
     class Particle:
         def __init__(self):
-            self.x = random.random()*math.pi*2.0
-            self.y = random.random()*2.0 - 0.5
-            self.dx = (random.random()-0.5)*0.1
+            self.x = random.random() * math.pi * 2.0
+            self.y = random.random() * 2.0 - 0.5
+            self.dx = (random.random() - 0.5) * 0.1
 
         def step(self, t):
-            self.y += 0.1*t
-            self.x += self.dx*t
+            self.y += 0.1 * t
+            self.x += self.dx * t
             if self.y > 1.5:
                 self.y -= 2.0
 
         def dist_sq(self, x, y):
-            dx = (self.x + math.pi - x) % (2.0*math.pi) - math.pi
+            dx = (self.x + math.pi - x) % (2.0 * math.pi) - math.pi
             dy = self.y - y
-            return dx*dx + dy*dy
+            return dx * dx + dy * dy
 
         def value_at(self, x, y):
             scale = self.y + 1.0
             f = self.dist_sq(x, y) / (radius_sq * scale * scale)
             if f < 1.0:
-                return (1.0 - f*f)*self.y
+                return (1.0 - f * f) * self.y
             else:
                 return 0.0
 
@@ -98,22 +99,22 @@ def xmaslight():
     # x: 0 - 2pi
     # y: 0 - 1
     def get_colour(x, y):
-        result = y*0.5
+        result = y * 0.5
         for p in particles:
             result += p.value_at(x, y)
-        brightness = 1.0 - min(max(result-0.2, 0.0), 1.0)
+        brightness = 1.0 - min(max(result - 0.2, 0.0), 1.0)
 
         if brightness > 0.95:
-            return [max_brightness, max_brightness, (brightness-0.95)*max_brightness/0.05]
+            return [max_brightness, max_brightness, (brightness - 0.95) * max_brightness / 0.05]
         elif brightness > 0.85:
-            return [(brightness-0.85)*max_brightness/0.1, max_brightness, 0.0]
+            return [(brightness - 0.85) * max_brightness / 0.1, max_brightness, 0.0]
         else:
-            return [0.0, brightness*max_brightness/0.85, 0.0]
+            return [0.0, brightness * max_brightness / 0.85, 0.0]
 
     # Get 3D flame colour (unwrap 2D plane from around cone)
     def get_colour_3d(x, z, y):
         theta = math.atan2(x, z)
-        return get_colour(theta, (y - min_alt)/(max_alt - min_alt))
+        return get_colour(theta, (y - min_alt) / (max_alt - min_alt))
 
     # advance particle positions
     def step_particles():

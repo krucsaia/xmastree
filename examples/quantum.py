@@ -44,18 +44,18 @@ This gives a nice pair of coordinates to convert into binary, which should prese
 '''
 
 # First get user supplied parameters
-import  sys
-if len(sys.argv)>1:
-    quantum = sys.argv[1]=='1'
+import sys
+
+if len(sys.argv) > 1:
+    quantum = sys.argv[1] == '1'
 else:
     quantum = True
-if len(sys.argv)>2:
+if len(sys.argv) > 2:
     max_brightness = int(sys.argv[2])
 else:
     max_brightness = 128
 
 # Now let's import everything we need
-import time
 try:
     import board
     import neopixel
@@ -66,72 +66,72 @@ import re
 import math
 from microqiskit import *
 
+
 # We'll also use a `make_line` function which does the same job as the one from QuantumBlur
 # see https://github.com/qiskit-community/QuantumBlur/blob/master/README.md for more info
-def make_line ( length ):
+def make_line(length):
     # number of bits required
-    n = int(math.ceil(math.log(length)/math.log(2)))
+    n = int(math.ceil(math.log(length) / math.log(2)))
     # iteratively build list
-    line = ['0','1']
-    for j in range(n-1):
+    line = ['0', '1']
+    for j in range(n - 1):
         # first append a reverse-ordered version of the current list
         line = line + line[::-1]
         # then add a '0' onto the end of all bit strings in the first half
-        for j in range(int(float(len(line))/2)):
+        for j in range(int(float(len(line)) / 2)):
             line[j] += '0'
         # and a '1' for the second half
-        for j in range(int(float(len(line))/2),int(len(line))):
-            line[j] += '1'     
+        for j in range(int(float(len(line)) / 2), int(len(line))):
+            line[j] += '1'
     return line
 
 
 # Before we finally get on with actually doing something, we need to take the coordinates for the lights from Matt's file
-coordfilename = "Python/coords.txt"
-fin = open(coordfilename,'r')
+coordfilename = "../coords.txt"
+fin = open(coordfilename, 'r')
 coords_raw = fin.readlines()
 coords_bits = [i.split(",") for i in coords_raw]
 coords = []
 for slab in coords_bits:
     new_coord = []
     for i in slab:
-        new_coord.append(int(re.sub(r'[^-\d]','', i)))
+        new_coord.append(int(re.sub(r'[^-\d]', '', i)))
     coords.append(new_coord)
 
 # And also set up the pixels (AKA 'LEDs')
-PIXEL_COUNT = len(coords) # this should be 500
+PIXEL_COUNT = len(coords)  # this should be 500
 pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-
 
 # Finally we can get on with making a Christmas tree effect with some quantum simulations!
 
 # the following magic numbers define the quadrant boundaries
 # they were found semi manually, and split the points evenly
-theta0 = [-math.pi/2+0.39,0+0.07,math.pi/2+0.025]
-x0,y0 = -21,-26
+theta0 = [-math.pi / 2 + 0.39, 0 + 0.07, math.pi / 2 + 0.025]
+x0, y0 = -21, -26
 # with this, we create four lists of points, one for each quadrant
 quadrants = [[] for _ in range(4)]
-for x,y,z in coords:
-    theta = math.atan2(y-y0,x-x0)
-    q = (theta>theta0[0]) + (theta>theta0[1]) + (theta>theta0[2])
-    quadrants[q].append((x,y,z))
-    
+for x, y, z in coords:
+    theta = math.atan2(y - y0, x - x0)
+    q = (theta > theta0[0]) + (theta > theta0[1]) + (theta > theta0[2])
+    quadrants[q].append((x, y, z))
+
 # we'll sort the 125 coords of each quadrant into 16 bins with a max of 8 items each
 bin_size = 8
 bin_num = 16
 bins = [[[] for _ in range(bin_num)] for _ in range(4)]
 
-for q,quadrant in enumerate(quadrants):
-    
+for q, quadrant in enumerate(quadrants):
+
     # for each coordinate, get the height and radius
     radii = {}
     heights = {}
-    for x,y,z in quadrant:
-        radii[x,y,z] = math.sqrt(x**2+y**2)
-        heights[x,y,z] = z
-    
+    for x, y, z in quadrant:
+        radii[x, y, z] = math.sqrt(x ** 2 + y ** 2)
+        heights[x, y, z] = z
+
     # first we sort by height
-    for j,coord in enumerate(sorted(heights, key=heights.get)):
-        bins[q][int(j/bin_size)].append(coord)
+    for j, coord in enumerate(sorted(heights, key=heights.get)):
+        bins[q][int(j / bin_size)].append(coord)
 
     # then the bins are sorted by radius
     for b in range(bin_num):
@@ -145,14 +145,14 @@ for q,quadrant in enumerate(quadrants):
             new_bin.append(coord)
 
         bins[q][b] = new_bin
-        
+
 # now we make lists of bit strings in which neighbouring strings have a Hamming distance of 1
 
 # for the four quadrants we need the four strings of 2 bits
 # quadrant 1 neighbours 0 and 2, so its string should differ from theirs by one bit
 # we do that by assigning 01 to quarant 1, 00 to quadrant 0 and 11 to quadrant 1
 # this also works for all the other sets of neighbours
-quadrants_line = ['00','01','11','10']
+quadrants_line = ['00', '01', '11', '10']
 
 # a similar list of bit strings will be used to assign bit strings to bins, and other for entries in bins
 # we'll use `make_line` to generate these for us
@@ -163,13 +163,12 @@ bin_line = make_line(bin_size)
 bit_strings = {}
 for q in range(4):
     for b in range(bin_num):
-         for j,coord in enumerate(bins[q][b]):
-                bit_strings[quadrants_line[q] + bins_line[b] + bin_line[j]] = coord
-           
-        
+        for j, coord in enumerate(bins[q][b]):
+            bit_strings[quadrants_line[q] + bins_line[b] + bin_line[j]] = coord
+
+
 # Now we are all set up, we can twinkle some Christmas lights!
 def xmaslight():
-
     # Here's where we do the quantum stuff!
     # We'll create an entangled GHZ state on 9 qubits and then loop continually add single qubit rotations to the circuit.
     # After each set of rotations, the quantum circuit is run and probabilities for each output string are extracted.
@@ -179,46 +178,46 @@ def xmaslight():
     n = 9
     qc = QuantumCircuit(n)
     qc.h(0)
-    for j in range(n-1):
-        qc.cx(j,j+1)
+    for j in range(n - 1):
+        qc.cx(j, j + 1)
 
     # pick random rotation angles for each run
-    theta = [random.random()*math.pi/32 for _ in range(n)] 
+    theta = [random.random() * math.pi / 32 for _ in range(n)]
 
     # iterate through the process of addin rotations
     run = 1
     while run == 1:
 
         # get current state vector
-        ket = simulate(qc,get='statevector')
+        ket = simulate(qc, get='statevector')
         # reinitialize circuit with that (to prevent circuits getting long)
-        ket = simulate(qc,get='statevector')
+        ket = simulate(qc, get='statevector')
         qc = QuantumCircuit(n)
         qc.initialize(ket)
-        
+
         if quantum:
             # add rotations for each qubit (with the random angles)
             for j in range(n):
-                qc.ry(theta[j],j)
+                qc.ry(theta[j], j)
         else:
             # just do a random bit flip
             j = random.choice(range(n))
             qc.x(j)
 
         # get probs for each output bit string
-        probs = simulate(qc,get='probabilities_dict')
+        probs = simulate(qc, get='probabilities_dict')
 
         # use probs to assign a brightness to each light
         max_prob = max(probs.values())
         colour = {}
-        for bit_string,coord in bit_strings.items():
-            c = int(probs[bit_string]*max_brightness/max_prob)
-            colour[coord] = (0,c,c)
+        for bit_string, coord in bit_strings.items():
+            c = int(probs[bit_string] * max_brightness / max_prob)
+            colour[coord] = (0, c, c)
 
         # update all the pixels
-        for j,coord in enumerate(coords):
+        for j, coord in enumerate(coords):
             pixels[j] = colour[tuple(coord)]
         pixels.show()
-        
-        
+
+
 xmaslight()

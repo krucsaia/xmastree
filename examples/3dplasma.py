@@ -1,8 +1,10 @@
 # Here are the libraries I am currently using:
 import time
 
-import board
-import neopixel
+from simulator import neopixel, board
+
+# import board
+# import neopixel
 import re
 import math
 
@@ -103,7 +105,7 @@ def xmaslight():
 
     # IMPORT THE COORDINATES (please don't break this bit)
 
-    coordfilename = "coords.txt"
+    coordfilename = "../coords.txt"
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()
@@ -122,6 +124,7 @@ def xmaslight():
     PIXEL_COUNT = len(coords)  # this should be 500
 
     pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
+    pixels.set_pixel_locations(coords)
 
     # YOU CAN EDIT FROM HERE DOWN
 

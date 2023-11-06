@@ -9,7 +9,6 @@ def xmaslight():
     # import neopixel
     from simulator import board, neopixel
     import re
-    import math
 
     # You are welcome to add any of these:
     # import random
@@ -89,53 +88,73 @@ def xmaslight():
 
     # yes, I just run which run is true
     run = 1
+
+    # set all lights white
+    LED = 0
+    while LED < len(coords):
+        pixels[LED] = [255, 255, 255]
+        LED += 1
+
     while run == 1:
 
-        time.sleep(slow)
+        # time.sleep(100)
 
         LED = 0
-        while LED < len(coords):
-            if math.tan(angle) * coords[LED][1] <= coords[LED][2] + c:
-                pixels[LED] = colourA
-            else:
-                pixels[LED] = colourB
-            LED += 1
+        centerX = 0
+        centerY = 0
+        centerZ = 0
+        radius = 180
 
-        # use the show() option as rarely as possible as it takes ages
-        # do not use show() each time you change a LED but rather wait until you have changed them all
+        while LED < len(coords):
+            if ((abs(coords[LED][0]) < (centerX + radius))
+                    & (abs(coords[LED][1]) < (centerY + radius))
+                    & (abs(coords[LED][2]) < (centerZ + radius))):
+                pixels[LED] = [105, 255, 180]
+            LED += 1
         pixels.show()
 
-        # now we get ready for the next cycle
-
-        angle += inc
-        if angle > 2 * math.pi:
-            angle -= 2 * math.pi
-            swap01 = 0
-            swap02 = 0
-
-        # this is all to keep track of which colour is 'on top'
-
-        if angle >= 0.5 * math.pi:
-            if swap01 == 0:
-                colour_hold = [i for i in colourA]
-                colourA = [i for i in colourB]
-                colourB = [i for i in colour_hold]
-                swap01 = 1
-
-        if angle >= 1.5 * math.pi:
-            if swap02 == 0:
-                colour_hold = [i for i in colourA]
-                colourA = [i for i in colourB]
-                colourB = [i for i in colour_hold]
-                swap02 = 1
-
-        # and we move the rotation point
-        c += direction * dinc
-
-        if c <= min_alt + buffer:
-            direction = 1
-        if c >= max_alt - buffer:
-            direction = -1
+        # while LED < len(coords):
+        #     if math.tan(angle) * coords[LED][1] <= coords[LED][2] + c:
+        #         pixels[LED] = colourA
+        #     else:
+        #         pixels[LED] = colourB
+        #     LED += 1
+        #
+        # # use the show() option as rarely as possible as it takes ages
+        # # do not use show() each time you change a LED but rather wait until you have changed them all
+        # pixels.show()
+        #
+        # # now we get ready for the next cycle
+        #
+        # angle += inc
+        # if angle > 2 * math.pi:
+        #     angle -= 2 * math.pi
+        #     swap01 = 0
+        #     swap02 = 0
+        #
+        # # this is all to keep track of which colour is 'on top'
+        #
+        # if angle >= 0.5 * math.pi:
+        #     if swap01 == 0:
+        #         colour_hold = [i for i in colourA]
+        #         colourA = [i for i in colourB]
+        #         colourB = [i for i in colour_hold]
+        #         swap01 = 1
+        #
+        # if angle >= 1.5 * math.pi:
+        #     if swap02 == 0:
+        #         colour_hold = [i for i in colourA]
+        #         colourA = [i for i in colourB]
+        #         colourB = [i for i in colour_hold]
+        #         swap02 = 1
+        #
+        # # and we move the rotation point
+        # c += direction * dinc
+        #
+        # if c <= min_alt + buffer:
+        #     direction = 1
+        # if c >= max_alt - buffer:
+        #     direction = -1
 
     return 'DONE'
 

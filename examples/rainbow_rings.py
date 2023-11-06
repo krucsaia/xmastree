@@ -1,18 +1,19 @@
 # Here are the libraries I am currently using:
-import time
-import board
-import re
+# import board
 import math
+import re
 
 # You are welcome to add any of these:
 import numpy as np
+
+from simulator import board
 
 USE_PLOT = False
 
 if (USE_PLOT):
     import matplotlib.pyplot as plt
 else:
-    import neopixel
+    from simulator import neopixel
 
 
 # plotting for testing
@@ -21,7 +22,7 @@ else:
 # Superior cylindrical coordinate system
 class cyl_coords:
     def __init__(self, coords, idx):
-        self.r = math.sqrt(coords[0]**2 + coords[1]**2)
+        self.r = math.sqrt(coords[0] ** 2 + coords[1] ** 2)
         self.theta = math.atan2(coords[0], coords[1])
         self.z = coords[2]
         self.color = [0, 0, 0]
@@ -30,10 +31,11 @@ class cyl_coords:
     def rotate(self, rotation):
         new_rotation = (self.theta + rotation)
         while (new_rotation > np.pi):
-            new_rotation -= 2*np.pi
+            new_rotation -= 2 * np.pi
         while (new_rotation < -np.pi):
-            new_rotation += 2*np.pi
+            new_rotation += 2 * np.pi
         self.theta = new_rotation
+
     # For plotting tests
 
     def get_coords(self):
@@ -44,9 +46,9 @@ class cyl_coords:
 
     def get_color(self):
         hex_name = hex((int(self.color[1]) << 16) | (
-            int(self.color[0]) << 8) | int(self.color[2]))
+                int(self.color[0]) << 8) | int(self.color[2]))
         # Transform hex number into string format plot accepts
-        return "#" + (8-len(hex_name))*"0" + hex_name[2:]
+        return "#" + (8 - len(hex_name)) * "0" + hex_name[2:]
 
 
 def xmaslight():
@@ -61,7 +63,7 @@ def xmaslight():
     # IMPORT THE COORDINATES (please don't break this bit)
 
     # coordfilename = "Python/coords.txt"
-    coordfilename = "coords.txt"  # path just coords in git repo
+    coordfilename = "../coords.txt"  # path just coords in git repo
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()
@@ -83,7 +85,7 @@ def xmaslight():
         pixels = coords  # set for local testing
     else:
         pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-
+        pixels.set_pixel_locations(coords)
     rainbow_lights(pixels, coords)
 
     return 'DONE'
@@ -119,7 +121,7 @@ def rainbow_lights(pixels, coords):
         ax = fig.gca(projection='3d')
         plt.ion()
 
-    while(True):
+    while (True):
         # Get LEDs & colors
         for led_idx in range(len(pixels)):
             c = cyl_coords_set[led_idx]
@@ -131,14 +133,14 @@ def rainbow_lights(pixels, coords):
 
         # Update
         for c in cyl_coords_set:
-            z_bin = (round((c.z - min_z)/ring_height) + inc) % len(colors)
+            z_bin = (round((c.z - min_z) / ring_height) + inc) % len(colors)
             # ensure no out of bounds
-            z_bin = max(min(z_bin, len(colors)-1), 0)
+            z_bin = max(min(z_bin, len(colors) - 1), 0)
             c.rotate(rot)  # rotate all points
             # Get intensity scaling by rotation
-            adjusted_rotation = (c.theta + np.pi/6.0 * z_bin) % (2.0 * np.pi)
+            adjusted_rotation = (c.theta + np.pi / 6.0 * z_bin) % (2.0 * np.pi)
             while (adjusted_rotation < 0):
-                adjusted_rotation += 2.0*np.pi
+                adjusted_rotation += 2.0 * np.pi
             intensity = adjusted_rotation / (np.pi)  # Scale from 0 to 2
             colors_update = np.array(colors[z_bin]) * intensity
             c.color = np.rint(colors_update)  # rounds to nearest int

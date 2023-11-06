@@ -1,52 +1,52 @@
 def xmaslight():
     # This is the code from my 
-    
-    #NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
-    
+
+    # NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
+
     # Here are the libraries I am currently using:
     import time
-    import board
-    import neopixel
+    # import board
+    # import neopixel
+    from simulator import neopixel, board
     import re
-    import math
-    
+
     # You are welcome to add any of these:
     import random
     # import numpy
     # import scipy
     # import sys
-    
+
     # If you want to have user changable values, they need to be entered from the command line
     # so import sys sys and use sys.argv[0] etc
     # some_value = int(sys.argv[0])
-    
+
     # IMPORT THE COORDINATES (please don't break this bit)
-    
-    coordfilename = "coords.txt"
-	
-    fin = open(coordfilename,'r')
+
+    coordfilename = "../coords.txt"
+
+    fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()
-    
+
     coords_bits = [i.split(",") for i in coords_raw]
-    
+
     coords = []
-    
+
     for slab in coords_bits:
         new_coord = []
         for i in slab:
-            new_coord.append(int(re.sub(r'[^-\d]','', i)))
+            new_coord.append(int(re.sub(r'[^-\d]', '', i)))
         coords.append(new_coord)
-    
-    #set up the pixels (AKA 'LEDs')
-    PIXEL_COUNT = len(coords) # this should be 500
-    
+
+    # set up the pixels (AKA 'LEDs')
+    PIXEL_COUNT = len(coords)  # this should be 500
+
     pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-    
-    
+    pixels.set_pixel_locations(coords)
+
     # YOU CAN EDIT FROM HERE DOWN
-    
-    #maxes = [max(c[i] for c in coords) for i in range(0, 3)]
-    #mins = [min(c[i] for c in coords) for i in range(0, 3)]
+
+    # maxes = [max(c[i] for c in coords) for i in range(0, 3)]
+    # mins = [min(c[i] for c in coords) for i in range(0, 3)]
 
     # Construct a k-d tree to make finding nearby lights easier
     # Maybe overkill for only 500 lights but should avoid O(n^2) if more are added
@@ -73,6 +73,7 @@ def xmaslight():
 
     def findWithinBox(minCoords, maxCoords):
         foundIndices = []
+
         def search(nodeIndex, dim):
             if nodeIndex >= 0:
                 node = tree[nodeIndex]
@@ -83,6 +84,7 @@ def xmaslight():
                     search(node["left"], (dim + 1) % 3)
                 if nodeCoords[dim] < maxCoords[dim]:
                     search(node["right"], (dim + 1) % 3)
+
         search(0, 0)
         return foundIndices
 
@@ -148,6 +150,7 @@ def xmaslight():
     # CONTAGION CALCULATIONS
 
     distanceFactor = (1 / infectProbMultiplierAtRadius) - 1
+
     def infectionProbability(p1, p2):
         return maxInfectProb / (1 + distanceFactor * (norm2(p1, p2) / (maxInfectRadius * maxInfectRadius)))
 
@@ -160,7 +163,7 @@ def xmaslight():
 
     run = 1
     while run == 1:
-        
+
         time.sleep(slow)
 
         if resetCountdown <= -resetTransitionDuration:
@@ -185,7 +188,9 @@ def xmaslight():
                         infectionStatus[i] = ("recovered", 0)
                     else:
                         infectionStatus[i] = ("infected", iterationsInfected + 1)
-                        newInfections.extend(j for j in findWithinRadius(coords[i], maxInfectRadius) if isSusceptible(j) and random.random() < infectionProbability(coords[i], coords[j]))
+                        newInfections.extend(j for j in findWithinRadius(coords[i], maxInfectRadius) if
+                                             isSusceptible(j) and random.random() < infectionProbability(coords[i],
+                                                                                                         coords[j]))
 
             for j in newInfections:
                 infectionStatus[j] = ("infected", 0)
