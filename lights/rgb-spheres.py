@@ -25,7 +25,7 @@ def xmaslight():
 	# IMPORT THE COORDINATES (please don't break this bit)
 	
 	#coordfilename = "./coords.txt"
-	coordfilename = "../coords2.txt"
+	coordfilename = "/home/attila/Documents/workspace/xmastree/coords2.txt"
 	
 	fin = open(coordfilename,'r')
 	coords_raw = fin.readlines()

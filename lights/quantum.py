@@ -87,7 +87,7 @@ def make_line(length):
 
 
 # Before we finally get on with actually doing something, we need to take the coordinates for the lights from Matt's file
-coordfilename = "../coords2.txt"
+coordfilename = "/home/attila/Documents/workspace/xmastree/coords2.txt"
 fin = open(coordfilename, 'r')
 coords_raw = fin.readlines()
 coords_bits = [i.split(",") for i in coords_raw]

@@ -66,7 +66,7 @@ def xmaslight():
     # IMPORT THE COORDINATES (please don't break this bit)
 
     # coordfilename = "Python/coords.txt"
-    coordfilename = "../coords2.txt"  # path just coords in git repo
+    coordfilename = "/home/attila/Documents/workspace/xmastree/coords2.txt"  # path just coords in git repo
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()

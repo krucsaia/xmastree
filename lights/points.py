@@ -73,10 +73,6 @@ def generate_random_color():
     return asd
 
 
-def points():
-    
-
-
 while True:
     spiral_down_top()
     # pixels.show()
