@@ -184,7 +184,7 @@ def xmaslight():
 	# from sim import neopixel
 
 	# IMPORT THE COORDINATES (please don't break this bit)
-	coordfilename = "Python/coords.txt"
+	coordfilename = "../coords2.txt"
 	# coordfilename = "coords.txt"
 
 	fin = open(coordfilename, 'r')

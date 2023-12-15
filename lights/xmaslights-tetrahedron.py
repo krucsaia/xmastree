@@ -22,7 +22,7 @@ def xmaslight():
     
     # IMPORT THE COORDINATES (please don't break this bit)
     
-    coordfilename = "Python/coords.txt"
+    coordfilename = "../coords2.txt"
 	
     fin = open(coordfilename,'r')
     coords_raw = fin.readlines()

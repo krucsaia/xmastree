@@ -7,8 +7,10 @@ def xmaslight():
     import time
     import re
     import math
+    import neopixel
+    import board
 
-    from simulator import neopixel, board
+    # from simulator import neopixel, board
     # You are welcome to add any of these:
     import random
     import numpy as np
@@ -22,7 +24,7 @@ def xmaslight():
 
     # IMPORT THE COORDINATES (please don't break this bit)
 
-    coordfilename = "../coords.txt"
+    coordfilename = "../coords2.txt"
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()

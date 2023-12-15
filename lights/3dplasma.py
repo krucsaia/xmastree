@@ -1,29 +1,28 @@
 # Here are the libraries I am currently using:
-import math
-# You are welcome to add any of these:
-import random
-import re
 import time
+
+# from simulator import neopixel, board
 
 import board
 import neopixel
-import simulator
+import re
+import math
 
+# You are welcome to add any of these:
+# import random
 # import numpy
 # import scipy
 # import sys
 
 
-# Play with these values to change how coarse the 3D Fire effect is.
+# Play with these values to change how coarse the plasma effect is.
 # Smaller value == faster
 MATWX = 20
 MATWY = 20
 MATWZ = 60
 
-# Change that value to change colour brightness.
-# May need to tweak the palette if changing that value
-maxBrightness = 255
-
+# Set this value to lower the RGB (1 = full range, 0.5 = Half range, etc...)
+dimLight = 0.2
 
 class boundingBox():
     def __init__(self):
@@ -67,7 +66,10 @@ class boundingBox():
 
 class matrix():
     def __init__(self, lx, ly, lz, bb):
-        self._list = [0] * lx * ly * lz
+        self._list = []
+        for i in range(lx * ly * lz):
+            self._list.append([0, 0, 0])
+
         self._strideX = 1
         self._strideY = self._strideX * lx
         self._strideZ = self._strideY * ly
@@ -76,14 +78,11 @@ class matrix():
         self._wY = ly
         self._wZ = lz
 
-    def get(self, x, y, z):
+    def get(self,x, y, z):
         return self._list[x * self._strideX + y * self._strideY + z * self._strideZ]
 
     def set(self, x, y, z, val):
         self._list[x * self._strideX + y * self._strideY + z * self._strideZ] = val
-
-    def copy(self, other):
-        self._list = other._list[:]
 
     def getTree(self, x, y, z):
         localX, localY, localZ = self._bb.normalize(x, y, z)
@@ -93,9 +92,11 @@ class matrix():
         return self.get(localX, localY, localZ)
 
 
-def xmaslight():
-    # This is the code from my 
+def dist(x, y, z, wx, wy, wz):
+    return math.sqrt((x - wx) * (x - wx) + (y - wy) * (y - wy) + (z - wz) * (z - wz))
 
+
+def xmaslight():
     # NOTE THE LEDS ARE GRB COLOUR (NOT RGB)
 
     # If you want to have user changable values, they need to be entered from the command line
@@ -104,7 +105,7 @@ def xmaslight():
 
     # IMPORT THE COORDINATES (please don't break this bit)
 
-    coordfilename = "coords.txt"
+    coordfilename = "../coords2.txt"
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()
@@ -123,30 +124,9 @@ def xmaslight():
     PIXEL_COUNT = len(coords)  # this should be 500
 
     pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-    simulator.set_pixel_locations(coords)
+    # pixels.set_pixel_locations(coords)
 
     # YOU CAN EDIT FROM HERE DOWN
-
-    # Color are G R B
-    palette = [0] * 256
-
-    # Transition points
-    palBST = 70
-    palB2R = 86  # Black to Red
-    palR2Y = 99  # Red to Yellow
-
-    # Black only
-    for i in range(0, palBST):
-        palette[i] = (0, 0, 0)
-    # Black to red
-    for i in range(palBST, palB2R):
-        palette[i] = (0, int((i - palBST) / (palB2R - palBST) * maxBrightness), 0)
-    # red to yellow
-    for i in range(palB2R, palR2Y):
-        palette[i] = (int((i - palB2R) / (palR2Y - palB2R) * maxBrightness), maxBrightness, 0)
-    # yellow to white
-    for i in range(palR2Y, 256):
-        palette[i] = (255, 255, int((i - (palR2Y)) / (256 - palR2Y) * maxBrightness))
 
     treeBB = boundingBox()
     for i in coords:
@@ -157,9 +137,10 @@ def xmaslight():
     # Our working area. We work with a non code/cylinder shape as it
     # would make thing too complicated
     workMat = matrix(MATWX, MATWY, MATWZ, treeBB)
-    oldMat = matrix(MATWX, MATWY, MATWZ, treeBB)
 
     slow = 0
+
+    t = 0
 
     # yes, I just run which run is true
     run = 1
@@ -168,35 +149,28 @@ def xmaslight():
         time.sleep(slow)
 
         for LED in range(0, PIXEL_COUNT):
-            v = workMat.getTree(coords[LED][0], coords[LED][1], coords[LED][2])
-            pixels[LED] = palette[v]
+            pixels[LED] = workMat.getTree(coords[LED][0], coords[LED][1], coords[LED][2])
 
         pixels.show()
 
-        oldMat.copy(workMat)
-
         # Update the matrix
-        for x in range(1, MATWX - 1):
-            for y in range(1, MATWY - 1):
-                for z in range(2, MATWZ):
-                    v = oldMat.get(x, y, z - 2)
-                    v = v + oldMat.get(x - 1, y, z - 1)
-                    v = v + oldMat.get(x, y - 1, z - 1)
-                    v = v + oldMat.get(x, y, z - 1)
-                    v = v + oldMat.get(x, y + 1, z - 1)
-                    v = v + oldMat.get(x + 1, y, z - 1)
-                    v = max(min(int(v / 6), 255), 0)
-
-                    workMat.set(x, y, z, v)
-
-        # light the fire!
         for x in range(0, MATWX):
             for y in range(0, MATWY):
-                for z in range(0, 2):
-                    if random.uniform(0, 1) < 0.35:
-                        workMat.set(x, y, z, 255)
-                    else:
-                        workMat.set(x, y, z, 0)
+                for z in range(0, MATWZ):
+                    d1 = dist(x + t, y, z, MATWX, MATWY, MATWZ)
+                    d2 = dist(x, y, z,  MATWX/2, MATWY/2, MATWZ)
+                    d3 = dist(x, y + t / 7, z, MATWX * 0.75, MATWY/2, MATWZ)
+                    d4 = dist(x, y, z, MATWX*0.75, MATWY, MATWZ)
+
+                    value = math.sin(d1 / 8) + math.sin(d2 / 8.0) + math.sin(d3 / 7.0) + math.sin(d4 / 8.0)
+
+                    colour = int((4 + value)) * 32
+                    r = min(colour, 255) * dimLight
+                    g = min(colour * 2, 255) * dimLight
+                    b = min(255 - colour, 255) * dimLight
+
+                    workMat.set(x, y, z, (g, r, b))
+        t = t + 1
 
     return 'DONE'
 

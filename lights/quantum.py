@@ -56,12 +56,12 @@ else:
     max_brightness = 128
 
 # Now let's import everything we need
-try:
-    import board
-    import neopixel
-except: # use a simulator when the actual hardware is not present
-    from sim import board
-    from sim import neopixel
+import board
+import neopixel
+
+# except: # use a simulator when the actual hardware is not present
+#     from sim import board
+#     from sim import neopixel
 import re
 import math
 from microqiskit import *
@@ -87,7 +87,7 @@ def make_line(length):
 
 
 # Before we finally get on with actually doing something, we need to take the coordinates for the lights from Matt's file
-coordfilename = "../coords.txt"
+coordfilename = "../coords2.txt"
 fin = open(coordfilename, 'r')
 coords_raw = fin.readlines()
 coords_bits = [i.split(",") for i in coords_raw]

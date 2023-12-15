@@ -1,13 +1,7 @@
 import time
 import math
-
-
-# I used this class to simulate the neopixel board, since I do not have
-# a customizable christmas tree... yet.
-class BoardSimulator(list):
-    def show(self):
-        print(self)
-
+import neopixel
+import board
 
 # The order for the Traveling Salesman path. Computing it takes a while
 # so I'm hardcoding the solution instead.
@@ -15,13 +9,12 @@ _ORDER = [462, 460, 459, 461, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 
 
 
 if __name__ == "__main__":
-    try:
-        import neopixel
-        pixels = neopixel.NeoPixel(board.D18, len(_ORDER), auto_write=False)
-    except ImportError:
-        print("Failed to import neopixel. Creating a simulated set of pixels.")
-        input("Press Enter to continue in this debug mode.")
-        pixels = BoardSimulator(range(len(_ORDER)))
+    # try:
+    pixels = neopixel.NeoPixel(board.D18, len(_ORDER), auto_write=False)
+    # except ImportError:
+    #     print("Failed to import neopixel. Creating a simulated set of pixels.")
+    #     input("Press Enter to continue in this debug mode.")
+    #     pixels = BoardSimulator(range(len(_ORDER)))
 
     # You mentioned the bulbs are too bright if they are set to 255, so this
     # number configures the max brightness of each RGB value. Change this

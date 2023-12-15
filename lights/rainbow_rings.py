@@ -1,19 +1,22 @@
 # Here are the libraries I am currently using:
-# import board
+import time
+
+import board
 import math
 import re
+import neopixel
 
 # You are welcome to add any of these:
 import numpy as np
 
-from simulator import board
+# from simulator import board
 
 USE_PLOT = False
 
-if (USE_PLOT):
-    import matplotlib.pyplot as plt
-else:
-    from simulator import neopixel
+# if (USE_PLOT):
+#     import matplotlib.pyplot as plt
+# else:
+#     from simulator import neopixel
 
 
 # plotting for testing
@@ -63,7 +66,7 @@ def xmaslight():
     # IMPORT THE COORDINATES (please don't break this bit)
 
     # coordfilename = "Python/coords.txt"
-    coordfilename = "../coords.txt"  # path just coords in git repo
+    coordfilename = "../coords2.txt"  # path just coords in git repo
 
     fin = open(coordfilename, 'r')
     coords_raw = fin.readlines()
@@ -85,7 +88,7 @@ def xmaslight():
         pixels = coords  # set for local testing
     else:
         pixels = neopixel.NeoPixel(board.D18, PIXEL_COUNT, auto_write=False)
-        pixels.set_pixel_locations(coords)
+        # pixels.set_pixel_locations(coords)
     rainbow_lights(pixels, coords)
 
     return 'DONE'
@@ -115,12 +118,6 @@ def rainbow_lights(pixels, coords):
     # Rotate 10 degrees each iteration
     rot = np.pi / 18.0
 
-    # Setup interactive plotting
-    if (USE_PLOT):
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        plt.ion()
-
     while (True):
         # Get LEDs & colors
         for led_idx in range(len(pixels)):
@@ -130,6 +127,7 @@ def rainbow_lights(pixels, coords):
         # Show
         if (not USE_PLOT):
             pixels.show()
+            time.sleep(0.2)
 
         # Update
         for c in cyl_coords_set:
@@ -146,15 +144,6 @@ def rainbow_lights(pixels, coords):
             c.color = np.rint(colors_update)  # rounds to nearest int
 
         inc += 1 % len(colors)
-
-        # plotting the points
-        if (USE_PLOT):
-            plt.pause(0.1)
-            ax.clear()
-            for c in cyl_coords_set:
-                p = c.get_coords()
-                ax.scatter(p[0], p[1], p[2], zdir='z', c=c.get_color())
-            plt.draw()
 
 
 # yes, I just put this at the bottom so it auto runs

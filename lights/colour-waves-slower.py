@@ -154,7 +154,7 @@ def xmaslight():
 	# from sim import neopixel
 
 	# IMPORT THE COORDINATES (please don't break this bit)
-	coordfilename = "Python/coords.txt"
+	coordfilename = "../coords2.txt"
 
 	fin = open(coordfilename, 'r')
 	coords_raw = fin.readlines()
@@ -210,7 +210,7 @@ def xmaslight():
 	standard_wave_width = 3
 
 	# pause between cycles (normally zero as it is already quite slow)
-	slow = 0
+	slow = 0.02
 
 	black = [0,0,0]
 	number_of_spheres_to_use = 1
