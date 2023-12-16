@@ -55,9 +55,9 @@ def xmaslight():
         ys.append(i[1])
         zs.append(i[2])
 
-    slow = 0
+    slow = 0.1
 
-    ballradius = 220
+    ballradius = 800
 
     # the eight colours in GRB order
     # if you are turning a lot of them on at once, keep their brightness down please
